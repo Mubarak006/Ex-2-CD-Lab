@@ -34,94 +34,53 @@
 
 # INPUT
 ```
+
 %{
-#include "exp3cd.tab.h"
-#include <stdio.h>
+ int COMMENT=0;
 %}
-
+identifier [a-zA-Z][a-zA-Z0-9]*
 %%
-
-[0-9]+                  { return NUMBER; }
-[a-zA-Z][a-zA-Z0-9]*    { return ID; }
-
-"+"     { return '+'; }
-"-"     { return '-'; }
-"*"     { return '*'; }
-"/"     { return '/'; }
-"("     { return '('; }
-")"     { return ')'; }
-
-[ \t]   ;          /* ignore spaces */
-\n      return 0;
-
-.       return yytext[0];
-
+#.* { printf("\n%s is a PREPROCESSOR DIRECTIVE",yytext);} 
+int | float | char | double | while | for | do | if |
+break | continue | void | switch | case | long | struct | const | typedef | return | else |
+goto {printf("\n\t%s is a KEYWORD",yytext);}
+"/*" {COMMENT = 1;}
+"*/" {COMMENT = 0;}
+{identifier}\( {if(!COMMENT)printf("\n\nFUNCTION\n\t%s",yytext);}
+\{ {if(!COMMENT) printf("\n BLOCK BEGINS");}
+\} {if(!COMMENT) printf("\n BLOCK ENDS");}
+{identifier}(\[[0-9]*\])? {if(!COMMENT) printf("\n %s IDENTIFIER",yytext);}
+\".*\" {if(!COMMENT) printf("\n\t%s is a STRING",yytext);}
+[0-9]+ {if(!COMMENT) printf("\n\t%s is a NUMBER",yytext);}
+\)(\;)? {if(!COMMENT) printf("\n\t");ECHO;printf("\n");}
+\( ECHO;
+= {if(!COMMENT)printf("\n\t%s is an ASSIGNMENT OPERATOR",yytext);}
+\<= |
+\>= |
+\< |
+== |
+\> {if(!COMMENT) printf("\n\t%s is a RELATIONAL OPERATOR",yytext);}
 %%
-
-int yywrap()
+int main(int argc,char **argv)
 {
-    return 1;
+if (argc > 1)
+{
+FILE *file;
+file = fopen(argv[1],"r"); if(!file)
+{
+printf("could not open %s \n",argv[1]); exit(0);
 }
-```
-
-```
-%{
-#include <stdio.h>
-#include <stdlib.h>
-
-int yylex();
-void yyerror(const char *s);
-
-int valid = 1;
-%}
-
-%token NUMBER ID
-
-%%
-
-statement:
-        expr
-        {
-            if(valid)
-                printf("\nValid Arithmetic Expression\n");
-        }
-        ;
-
-expr:
-        expr '+' term
-      | expr '-' term
-      | term
-      ;
-
-term:
-        term '*' factor
-      | term '/' factor
-      | factor
-      ;
-
-factor:
-        '(' expr ')'
-      | NUMBER
-      | ID
-      ;
-
-%%
-
-int main()
-{
-    printf("Enter Expression:\n");
-    yyparse();
-    return 0;
+yyin = file;
 }
-
-void yyerror(const char *s)
+yylex(); printf("\n\n"); return 0;
+} int yywrap()
 {
-    valid = 0;
-    printf("\nInvalid Arithmetic Expression\n");
+return 0;
 }
 ```
 # OUTPUT
-<img width="1229" height="667" alt="image" src="https://github.com/user-attachments/assets/f37a3280-c095-4ae7-a341-c34a91e06399" />
+<img width="678" height="487" alt="image" src="https://github.com/user-attachments/assets/b4add2c6-6747-427e-9479-19243eb6695d" />
+
 
 # RESULT
 ## The lexical analyzer is implemented using lex and the output is verified.
